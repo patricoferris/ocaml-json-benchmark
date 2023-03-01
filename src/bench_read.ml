@@ -1,5 +1,5 @@
 open Core
-open Core_bench.Std
+open Core_bench
 
 let random_json =
   let random_events =
@@ -10,7 +10,7 @@ let random_json =
   `A random_events |> Ezjsonm.to_string
 
 let () =
-  Command.run
+  Command_unix.run
   @@ Bench.make_command
        [ (* Bench.Test.create ~name:"ezjsonm read raw" (fun () -> *)
          (*   random_json |> Ezjsonm.from_string |> ignore *)
@@ -27,6 +27,12 @@ let () =
                |> Ezjsonm.get_list Random_data.Ez.of_json
              in
              ignore event_list )
+       ; Bench.Test.create ~name:"ezjsone read" (fun () ->
+        let event_list : Random_data.event list =
+          random_json |> Ezjsone.from_string
+          |> Ezjsone.get_list Random_data.Ez.of_json
+        in
+        ignore event_list )
        ; Bench.Test.create ~name:"yojson read" (fun () ->
              let event_list : Random_data.event list =
                random_json |> Yojson.Basic.from_string
@@ -41,7 +47,6 @@ let () =
              in
              let event_list : Random_data.event list =
                List.map ~f:Random_data.Jaf.of_json
-                 (extract_array
-                    (Result.ok_or_failwith (Jsonaf.of_string random_json)))
+                 (extract_array (Jsonaf.of_string random_json))
              in
              ignore event_list ) ]
